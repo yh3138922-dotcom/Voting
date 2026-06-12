@@ -96,3 +96,56 @@ button.ghost:hover{background:#e5e7eb}
   color:#1e3a8a;text-decoration:none;font-weight:800;background:#eef2ff;
   padding:8px 12px;border-radius:10px;
 }
+
+
+/* ==== UI FIX: 投票者选项栏布局修正 ====
+   原因：checkbox 和选项文字没有明确分栏，容易在部分浏览器或窄屏下发生重叠。
+   修正：每个选项改为左侧复选框、右侧文字内容的两列网格。
+*/
+.choice {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: flex-start;
+  background: #ffffff;
+  min-height: auto;
+  overflow: hidden;
+}
+
+.choice input[type="checkbox"] {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: center;
+  align-self: start;
+  width: 16px;
+  height: 16px;
+  margin: 4px 0 0 0;
+  flex: none;
+}
+
+.choice > div {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.option-title {
+  display: block;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.option-desc {
+  display: block;
+  line-height: 1.55;
+  word-break: break-word;
+  margin-top: 4px;
+}
+
+@media (max-width: 520px) {
+  .choice {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+}
