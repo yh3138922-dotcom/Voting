@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>主持人界面｜远程投票工具</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+  <header>
+    <h1>主持人界面</h1>
+    <p>创建投票、设置规则、查看汇总结果与每位投票人的选择。</p>
+  </header>
+
+  <nav class="nav">
+    <a href="./host.html">主持人界面</a>
+    <a href="./vote.html">投票者界面</a>
+  </nav>
+
+  <main>
+    <section class="card">
+      <h2>连接状态</h2>
+      <p id="connectionStatus" class="muted">正在检查配置……</p>
+      <p class="notice">
+        第一次使用前，请先创建 Supabase 项目，执行 <code>supabase_schema.sql</code>，再把项目 URL 和 anon key 写入 <code>config.js</code>。
+      </p>
+    </section>
+
+    <div class="grid">
+      <section>
+        <div class="card">
+          <h2>创建投票</h2>
+          <div class="row">
+            <label>投票标题</label>
+            <input id="pollTitle" type="text" placeholder="例如：周末去哪玩？" />
+          </div>
+          <div class="three">
+            <div class="row">
+              <label>投票人数</label>
+              <input id="voterCount" type="number" min="1" value="3" />
+            </div>
+            <div class="row">
+              <label>每人票数</label>
+              <input id="votesPerPerson" type="number" min="1" value="1" />
+            </div>
+            <div class="row">
+              <label>选项数量</label>
+              <input id="optionCount" type="number" min="1" value="3" />
+            </div>
+          </div>
+          <div class="btns">
+            <button class="secondary" id="applyOptionCountBtn">应用选项数量</button>
+          </div>
+
+          <h3>编辑选项</h3>
+          <div id="optionEditor"></div>
+
+          <div class="btns">
+            <button id="createPollBtn">创建投票</button>
+            <button class="ghost" id="resetEditorBtn">重置编辑区</button>
+          </div>
+
+          <div id="createdBox" class="result-box hidden"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="card">
+          <h2>查看投票结果</h2>
+          <div class="row">
+            <label>投票 ID</label>
+            <input id="resultPollId" type="text" placeholder="粘贴投票 ID" />
+          </div>
+          <div class="btns">
+            <button id="loadResultsBtn">查看结果</button>
+            <button class="secondary" id="refreshResultsBtn">刷新结果</button>
+          </div>
+          <div id="resultsBox"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>轻量远程投票工具，不适合正式选举或高安全投票。</p>
+  </footer>
+
+  <script src="./config.js"></script>
+  <script src="./shared.js"></script>
+  <script src="./host.js"></script>
+</body>
+</html>
