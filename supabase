@@ -1,0 +1,139 @@
+-- Supabase SQL Editor 中执行本文件。
+-- 轻量远程投票：主持人界面 + 投票者界面。
+-- 注意：这是非正式投票工具，不做登录认证，不适合正式选举。
+
+create extension if not exists pgcrypto;
+
+drop trigger if exists trg_validate_vote on public.votes;
+drop function if exists public.validate_vote();
+
+drop table if exists public.votes;
+drop table if exists public.voters;
+drop table if exists public.poll_options;
+drop table if exists public.polls;
+
+create table public.polls (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  voter_count integer not null check (voter_count > 0),
+  votes_per_person integer not null check (votes_per_person > 0),
+  created_at timestamptz not null default now()
+);
+
+create table public.poll_options (
+  id uuid primary key default gen_random_uuid(),
+  poll_id uuid not null references public.polls(id) on delete cascade,
+  name text not null,
+  description text default '',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table public.voters (
+  id uuid primary key default gen_random_uuid(),
+  poll_id uuid not null references public.polls(id) on delete cascade,
+  voter_no integer not null check (voter_no > 0),
+  voter_name text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (poll_id, voter_no)
+);
+
+create table public.votes (
+  id uuid primary key default gen_random_uuid(),
+  poll_id uuid not null references public.polls(id) on delete cascade,
+  option_id uuid not null references public.poll_options(id) on delete cascade,
+  voter_no integer not null check (voter_no > 0),
+  created_at timestamptz not null default now(),
+  unique (poll_id, option_id, voter_no)
+);
+
+create index idx_poll_options_poll_id on public.poll_options(poll_id);
+create index idx_voters_poll_id on public.voters(poll_id);
+create index idx_votes_poll_id on public.votes(poll_id);
+create index idx_votes_voter on public.votes(poll_id, voter_no);
+
+create or replace function public.validate_vote()
+returns trigger
+language plpgsql
+as $$
+declare
+  max_voters integer;
+  max_votes integer;
+  current_count integer;
+  option_poll uuid;
+begin
+  select voter_count, votes_per_person
+    into max_voters, max_votes
+    from public.polls
+    where id = new.poll_id;
+
+  if max_voters is null then
+    raise exception 'Poll does not exist.';
+  end if;
+
+  if new.voter_no < 1 or new.voter_no > max_voters then
+    raise exception 'Voter number out of range.';
+  end if;
+
+  select poll_id
+    into option_poll
+    from public.poll_options
+    where id = new.option_id;
+
+  if option_poll is null or option_poll <> new.poll_id then
+    raise exception 'Option does not belong to this poll.';
+  end if;
+
+  select count(*)
+    into current_count
+    from public.votes
+    where poll_id = new.poll_id
+      and voter_no = new.voter_no;
+
+  if current_count >= max_votes then
+    raise exception 'Votes per person exceeded.';
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger trg_validate_vote
+before insert on public.votes
+for each row execute function public.validate_vote();
+
+alter table public.polls enable row level security;
+alter table public.poll_options enable row level security;
+alter table public.voters enable row level security;
+alter table public.votes enable row level security;
+
+create policy "public read polls"
+on public.polls for select to anon using (true);
+
+create policy "public create polls"
+on public.polls for insert to anon with check (true);
+
+create policy "public read options"
+on public.poll_options for select to anon using (true);
+
+create policy "public create options"
+on public.poll_options for insert to anon with check (true);
+
+create policy "public read voters"
+on public.voters for select to anon using (true);
+
+create policy "public upsert voters insert"
+on public.voters for insert to anon with check (true);
+
+create policy "public update voters"
+on public.voters for update to anon using (true) with check (true);
+
+create policy "public read votes"
+on public.votes for select to anon using (true);
+
+create policy "public create votes"
+on public.votes for insert to anon with check (true);
+
+create policy "public delete votes"
+on public.votes for delete to anon using (true);
