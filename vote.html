@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>投票者界面｜远程投票工具</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+  <header>
+    <h1>投票者界面</h1>
+    <p>填写自己的投票人编号和名称，然后按规则投票。</p>
+  </header>
+
+  <nav class="nav">
+    <a href="./host.html">主持人界面</a>
+    <a href="./vote.html">投票者界面</a>
+  </nav>
+
+  <main>
+    <section class="card">
+      <h2>连接状态</h2>
+      <p id="connectionStatus" class="muted">正在检查配置……</p>
+    </section>
+
+    <section class="card">
+      <h2>进入投票</h2>
+      <div class="row">
+        <label>投票 ID</label>
+        <input id="votePollId" type="text" placeholder="主持人提供的投票 ID" />
+      </div>
+      <div class="two">
+        <div class="row">
+          <label>投票人编号</label>
+          <input id="voterNo" type="number" min="1" value="1" />
+        </div>
+        <div class="row">
+          <label>你的名称</label>
+          <input id="voterName" type="text" placeholder="例如：小王 / 张三 / Frander" />
+        </div>
+      </div>
+      <div class="btns">
+        <button id="loadPollBtn">加载投票</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>投票栏</h2>
+      <div id="voteBox">
+        <p class="muted">请先填写投票 ID、编号和名称，然后加载投票。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>同一投票人编号再次提交会覆盖之前选择。</p>
+  </footer>
+
+  <script src="./config.js"></script>
+  <script src="./shared.js"></script>
+  <script src="./vote.js"></script>
+</body>
+</html>
